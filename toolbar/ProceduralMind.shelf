@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<shelfDocument>
+  <!-- This file contains definitions of shelves, toolbars, and tools.
+ It should not be hand-edited when it is being used by the application.
+ Note, that two definitions of the same element are not allowed in
+ a single file. -->
+
+  <tool name="process_snapshots" label="Process Snapshots" icon="PLASMA_App">
+    <script scriptType="python"><![CDATA[import os
+#This tool is to generate images by looping all the node's ancestors so you can show off how your result was done
+
+
+#choose a node
+selectNodePath = hou.ui.selectNode(title = 'Please select a SOP node that you want to snap shot all its ancestors')
+node = hou.node(selectNodePath)
+if not isinstance(node.type(), hou.SopNodeType):
+    hou.ui.displayMessage(title = "Warning", text = 'You need to select a SOP node!')
+else:
+    #choose directory that could save all the images
+    images_dir = hou.ui.selectFile(file_type = hou.fileType.Directory, title = "Please choose where your snapshots saved")
+    if images_dir == '':
+        hou.ui.displayMessage(title = 'Warning', text = "You need to select a valid directory path!")
+    else:      
+        #get all its ancestors and reverse the ancestors tuple order
+        ancestors = list(node.inputAncestors())
+        ancestors.reverse()
+        ancestors.append(node)
+        
+        #setup flipbook options   
+        curFrame = hou.frame()
+        desktop = hou.ui.curDesktop()
+        scene = desktop.paneTabOfType(hou.paneTabType.SceneViewer)
+        flipbook_options = scene.flipbookSettings().stash()
+        flipbook_options.frameRange((curFrame, curFrame))
+        flipbook_options.outputToMPlay(False)
+        
+        #loop ancestors
+        for ancestor in ancestors:
+            #setup display and render tag
+            ancestor.setDisplayFlag('on')
+            ancestor.setRenderFlag('on')
+            
+            #setup flip book options and generate flipbook file
+            file_name = str(ancestors.index(ancestor)) + "_" + ancestor.name()+".jpeg"
+            file_save_path = os.path.join(images_dir, file_name)
+            flipbook_options.output(file_save_path)
+            scene.flipbook(scene.curViewport(), flipbook_options)
+            
+            print(file_save_path)]]></script>
+  </tool>
+
+  <toolshelf name="ProceduralMind::1.0" label="Procedural Mind">
+    <memberTool name="ProceduralMind::Progress Snapshots::1.0"/>
+  </toolshelf>
+
+  <tool name="ProceduralMind::Progress Snapshots::1.0" label="Progress Snapshots" icon="$HFS/houdini/help/icons/ROP/soho.svg">
+    <script scriptType="python"><![CDATA[import os
+#This tool is to generate images by looping all the node's ancestors so you can show off how your result was done
+
+
+#choose a node
+selectNodePath = hou.ui.selectNode(title = 'Please select a SOP node that you want all its ancestors snapshots')
+if  selectNodePath == None:
+    pass
+else:
+    node = hou.node(selectNodePath)
+    if not isinstance(node.type(), hou.SopNodeType):
+        hou.ui.displayMessage(title = "Warning", text = 'You need to select a SOP node!')
+    else:
+        #choose directory that could save all the images
+        images_dir = hou.ui.selectFile(file_type = hou.fileType.Directory, title = "Please choose where your snapshots saved")
+        if images_dir == '':
+            hou.ui.displayMessage(title = 'Warning', text = "You need to select a valid directory path!")
+        else:      
+            #get all its ancestors and reverse the ancestors tuple order
+            ancestors = list(node.inputAncestors())
+            ancestors.reverse()
+            ancestors.append(node)
+            
+            #setup flipbook options   
+            curFrame = hou.frame()
+            desktop = hou.ui.curDesktop()
+            scene = desktop.paneTabOfType(hou.paneTabType.SceneViewer)
+            flipbook_options = scene.flipbookSettings().stash()
+            flipbook_options.frameRange((curFrame, curFrame))
+            flipbook_options.outputToMPlay(False)
+            
+            #loop ancestors
+            for ancestor in ancestors:
+                #setup display and render tag
+                ancestor.setDisplayFlag('on')
+                ancestor.setRenderFlag('on')
+                
+                #setup flip book options and generate flipbook file
+                file_name = str(ancestors.index(ancestor)) + "_" + ancestor.name()+".jpeg"
+                file_save_path = os.path.join(images_dir, file_name)
+                flipbook_options.output(file_save_path)
+                scene.curViewport().homeSelected()
+                scene.flipbook(scene.curViewport(), flipbook_options)
+                
+                print(file_save_path)]]></script>
+  </tool>
+</shelfDocument>
